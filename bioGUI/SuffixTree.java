@@ -380,11 +380,9 @@ public class SuffixTree {
             //System.out.println("2: m_suffix = " + m_suffix);
          }
          if (m_suffix.length() > 0) {
-            if (currPos == 0)
-               activepoint.setLength(m_suffix.length() - 1);
-            else
+            if (m_suffix.length() - currPos - 1 >= 0)
                activepoint.setLength(m_suffix.length() - currPos - 1);
-            if (activepoint.getLength() < 0)
+            else
                activepoint.setLength(0);
          }
          else {
