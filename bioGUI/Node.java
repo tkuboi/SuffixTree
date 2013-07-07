@@ -12,7 +12,8 @@ public class Node {
    private int type;
    private Node[] children;
    private Node parent;
-   private Node[] suffixLink;
+   private Node suffixLink;
+   //private Node[] suffixLink;
    //private int position;
    private ArrayList<Position> positions;
 
@@ -33,7 +34,7 @@ public class Node {
       parent = null;
       type = TYPE_LEAF;
       this.children = new Node[6]; //place holder for A,T,C,G,$.
-      this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
+      //this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
       this.positions = new ArrayList<Position>();
    }
 
@@ -45,7 +46,7 @@ public class Node {
       parent = null;
       this.type = type;
       this.children = new Node[6]; //place holder for A,T,C,G,$.
-      this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
+      //this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
       this.positions = new ArrayList<Position>();
    }
 
@@ -57,7 +58,7 @@ public class Node {
       //this.length = end.position - start.position + 1;
       this.type = type;
       this.children = new Node[6]; //place holder for A,T,C,G,$.
-      this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
+      //this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
       this.positions = new ArrayList<Position>();
    }
 
@@ -69,7 +70,7 @@ public class Node {
       //this.length = end.position - start.position + 1;
       this.type = type;
       this.children = new Node[6]; //place holder for A,T,C,G,$.
-      this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
+      //this.suffixLink = new Node[6]; //place holder for A,T,C,G,$.
       this.positions = new ArrayList<Position>();
       this.positions.add(pos);
    }
@@ -189,21 +190,21 @@ public class Node {
       return this.parent;
    }
 
-   /*public void setSuffixLink(Node link) {
+   public void setSuffixLink(Node link) {
       this.suffixLink = link;
-   }*/
+   }
 
-   public void setSuffixLink(Node link, int i) {
+   /*public void setSuffixLink(Node link, int i) {
       this.suffixLink[i] = link;
-   }
-
-   /*public Node getSuffixLink() {
-      return this.suffixLink;
    }*/
 
-   public Node getSuffixLink(int i) {
-      return this.suffixLink[i];
+   public Node getSuffixLink() {
+      return this.suffixLink;
    }
+
+   /*public Node getSuffixLink(int i) {
+      return this.suffixLink[i];
+   }*/
 
    public static void main(String[] args){
       Node node = new Node();
