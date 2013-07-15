@@ -125,11 +125,10 @@ public class SuffixTree {
          while(m_sequences.get(idx).charAt(i) != '$') {
             c = m_sequences.get(idx).charAt(i);
             m_suffix += c;
-            System.out.println(i + ": Curr Char is : " + c);
+            //System.out.println(i + ": Curr Char is : " + c);
             currEndPos.position = i;
             remainder++;
             update(idx, i, c); //update the tree
-            canonize(idx,i); //if the active point is at the end of the edge.
             if (remainder == 0) {
                m_suffix = "";
                activepoint.setNode(root);
@@ -140,12 +139,12 @@ public class SuffixTree {
          }
          c = m_sequences.get(idx).charAt(i);
          m_suffix += c;
-         System.out.println(c);
+         //System.out.println(c);
          currEndPos.position = i;
-         System.out.println("----------------------");
+         //System.out.println("----------------------");
          remainder++;
          update(idx, i, c);
-         System.out.println("----------------------");
+         //System.out.println("----------------------");
       }
       return root;
    }
@@ -153,41 +152,38 @@ public class SuffixTree {
    private void update(int idx, int i, char c) {
       currNode = null; //newly created node
       prevNode = root;
-      //System.out.println("in update");
       boolean endPoint = testAndSplit(idx,i,c);
       while(!endPoint) {
-         //System.out.println("prevNode = " + prevNode.getType());
-         if (prevNode != null && currNode != null && currNode.getType() == Node.TYPE_INTERNAL) {
-            if (prevNode != root && prevNode != currNode) {
-               prevNode.setSuffixLink(currNode, alphabet.indexOf(c));
-               System.out.println("suffix link created " + prevNode.getPositionAt(0) + " -> " + currNode.getPositionAt(0));
+         canonize(idx, i);
+         if (currNode != null && currNode.getType() == Node.TYPE_INTERNAL) {
+            if (prevNode != null && prevNode != root && prevNode != currNode && prevNode.getSuffixLink() == null) {
+               prevNode.setSuffixLink(currNode);
             }
             prevNode = currNode;
+            currNode = null;
          }                  
          
-         canonize(idx, i);
          endPoint = testAndSplit(idx,i,c);
       }
-      if (prevNode != null  && currNode != null && prevNode != root && 
-          currNode.getType() == Node.TYPE_INTERNAL && prevNode != currNode) {
-         prevNode.setSuffixLink(currNode, alphabet.indexOf(c));
-         System.out.println("suffix link created");
+      canonize(idx, i);
+      if (currNode != null && currNode.getType() == Node.TYPE_INTERNAL) {
+         if (prevNode != null && prevNode != root && prevNode != currNode && prevNode.getSuffixLink() == null) {
+            prevNode.setSuffixLink(currNode);
+         }
+         prevNode = currNode;
       }
    }
 
    private boolean testAndSplit(int idx, int i, char c) {
       char nextEdge = '\0';
-      //System.out.println("in testAndSplit");
       if (remainder == 1){
          if (activepoint.getNode().getChildAt(alphabet.indexOf(c)) == null) { 
             //the node does not exist
             currNode = createLeafNode(idx, i, c);
             remainder--;
-            //activepoint.setEdge(nextEdge); //reset the edge
             updateActivePoint(c);
             return true;
          }
-         // if the char is the end of string and the char to be inserted is only $
          if (c == '$') {
             //System.out.println("in 7");
             activepoint.getNode().getChildAt(alphabet.indexOf(c)).addPosition(new Position(idx, i - remainder + 1));
@@ -198,7 +194,6 @@ public class SuffixTree {
          }
          else {  //the node does exist
             activepoint.setEdge(c);
-            //System.out.println("edge = " + activepoint.getEdge());
             activepoint.incrementLength();
             return true;
          }
@@ -209,11 +204,9 @@ public class SuffixTree {
          int sIdx = (eNode == null ? idx : eNode.getStart().idx);
          int sPosition = (eNode == null ? i : eNode.getStart().position);
 
-         //System.out.println("in else " + activepoint.getEdge());
-         //System.out.println("edge = " + e + " sPosition = " + sPosition + " length = " + activepoint.getLength() + " remainder = " + remainder);
          // if active_edge is null and active_node does not have the char as its child
          if (e == '\0' && activepoint.getNode().getChildAt(alphabet.indexOf(c)) == null) {
-            System.out.println("in 1");
+            //System.out.println("in 1");
             currNode = createLeafNode(idx, i, c);
             remainder--;
             updateActivePoint(c);
@@ -221,7 +214,7 @@ public class SuffixTree {
          }
          // if active_edge is not null and active_node doe not have the char as its child
          if (e != '\0' && eNode == null) {
-            System.out.println("in 2");
+            //System.out.println("in 2");
             currNode = createLeafNode(idx, i, c);
             remainder--;
             updateActivePoint(c);
@@ -229,21 +222,16 @@ public class SuffixTree {
          }
          // if active_edge is not null and root does not have the char as its child
          if (e != '\0' && root.getChildAt(alphabet.indexOf(c)) == null) {
-            System.out.println("in 3");
+            //System.out.println("in 3");
             currNode = insertInternalNode(idx, i, c);
             remainder--;
             updateActivePoint(c);
             return false;
          }
          // if active_edge is null and root does not have the char as its child
-         /*if (e == '\0' && root.getChildAt(alphabet.indexOf(c)) == null) {
-            System.out.println("in 4");
-            updateActivePoint(c);
-            return false;
-         }*/
          // if the chars do not match
          if (m_sequences.get(sIdx).charAt(sPosition + activepoint.getLength()) != c) {
-            System.out.println("in 5");
+            //System.out.println("in 5");
             currNode = insertInternalNode(idx, i, c);
             remainder--;
             updateActivePoint(c);
@@ -251,7 +239,7 @@ public class SuffixTree {
          }
          // if the char is the end of string and needs to insert char other than $
          if (c == '$' && activepoint.getLength() > 0) {
-            System.out.println("in 6");
+            //System.out.println("in 6");
             currNode = insertInternalNode(idx, i, c);
             remainder--;
             updateActivePoint(c);
@@ -259,16 +247,14 @@ public class SuffixTree {
          }
          // if the char is the end of string and the char to be inserted is only $
          if (c == '$' && activepoint.getLength() == 0) {
-            System.out.println("in 7");
+            //System.out.println("in 7");
             activepoint.getNode().getChildAt(alphabet.indexOf(c)).addPosition(new Position(idx, i - remainder + 1));
             propagatePositionUp(activepoint.getNode(), new Position(idx, i - remainder + 1));
             remainder--;
             updateActivePoint(c);
             return false;
          }
-         else {
-            System.out.println((sPosition + activepoint.getLength()) + " : " + m_sequences.get(sIdx).charAt(sPosition + activepoint.getLength()) + " sPosition: " + sPosition + " active_length: " + activepoint.getLength());
-            
+         else {            
             if (activepoint.getEdge() == '\0')
                activepoint.setEdge(c);
             //increment active_edge
@@ -290,16 +276,11 @@ public class SuffixTree {
       Node r = new Node(Node.TYPE_INTERNAL,
                 new Position(sIdx, sPosition),
                 new Position(sIdx, ePosition));
-      //System.out.println("Active Node is TYPE = " + activepoint.getNode().getType());
-      //System.out.println("Internal node : edge = " + e + " start = " + sPosition + " end = " + ePosition + " remainder= " + remainder + " length= " + activepoint.getLength());
-            
       if (eNode == null)
          System.out.println("eNode is null");
  
       //adjust start index of the original leaf node
       eNode.resetStart(activepoint.getLength());
-      //System.out.println("eNode begins at : " + eNode.getStart().position);
-      //System.out.println("eNode begins at : " + m_sequences.get(sIdx).charAt(eNode.getStart().position));
             
       //add original leaf as a child of the new node
       r.addChildAt(alphabet.indexOf(m_sequences.get(sIdx).charAt(eNode.getStart().position)), eNode);
@@ -309,7 +290,6 @@ public class SuffixTree {
       }
       else {
          //create new leaf node
-         //System.out.println(i + " Create Leaf node : " + c + " position= " + idx + ":" + (i - remainder + 1));
          Node leaf = new Node(Node.TYPE_LEAF, new Position(idx,i), currEndPos, new Position(idx, i - remainder + 1));
          m_leaves.add(leaf);
          //add new leaf as a child of the new node
@@ -331,7 +311,7 @@ public class SuffixTree {
 
    public Node createLeafNode(int idx, int i, char c) {
       Node leaf;
-      //System.out.println(i + " Create Leaf node : " + c + " position= " + idx + ":" + (i - remainder + 1));
+      //System.out.println(i + " Create Leaf node : " + c + " position= " + idx + ":" + (i - remainder + 1) + " " + m_suffix);
       leaf = new Node(Node.TYPE_LEAF,new Position(idx,i),currEndPos,new Position(idx,i - remainder + 1));
       leaf.setParent(activepoint.getNode());
       m_leaves.add(leaf);
@@ -342,17 +322,14 @@ public class SuffixTree {
 
    public void updateActivePoint(char c){
       char nextEdge = '\0';
-      if (m_suffix.length() > 1) {
-         m_suffix = m_suffix.substring(1);
-         nextEdge = m_suffix.charAt(0); 
-      }
-      else {
-         m_suffix = "";
-      }
-
-      //      if the active point is at root
       if (activepoint.getNode() == root) {
-         //System.out.println("0: m_suffix = " + m_suffix);
+         if (m_suffix.length() > 1) {
+            m_suffix = m_suffix.substring(1);
+            nextEdge = m_suffix.charAt(0); 
+         }
+         else {
+            m_suffix = "";
+         }
          //         move the acive_node following rule#1
          activepoint.setEdge(nextEdge);           
          if (m_suffix.length() > 0) {
@@ -362,55 +339,57 @@ public class SuffixTree {
             activepoint.setLength(0);
          }
          currPos = 0;
+         fromRoot = true;
       }
          //      else
       else { // active node is not root
          //         move the acive_node following rule#3
-         //System.out.println("1: m_suffix = " + m_suffix);
-         if (activepoint.getEdge() != '\0' && activepoint.getNode().getSuffixLink(alphabet.indexOf(activepoint.getEdge())) != null) {
-               //System.out.println("have suffix link " + activepoint.getNode().getSuffixLink(alphabet.indexOf(activepoint.getEdge())).getPositionAt(0));
-               activepoint.setNode(activepoint.getNode().getSuffixLink(alphabet.indexOf(activepoint.getEdge())));
-               currPos = getLegUp(activepoint.getNode());
-               //System.out.println("currPos = " + currPos);
-               if (m_suffix.length() > currPos)
-                  nextEdge = m_suffix.charAt(currPos);
+         if (activepoint.getEdge() != '\0' && activepoint.getNode().getSuffixLink() != null) {
+               activepoint.setNode(activepoint.getNode().getSuffixLink());
+               fromRoot = false;
          }
          else {
             activepoint.setNode(root);
-            currPos = 0;
-            //System.out.println("2: m_suffix = " + m_suffix);
-         }
-         if (m_suffix.length() > 0) {
-            if (m_suffix.length() - currPos - 1 >= 0)
-               activepoint.setLength(m_suffix.length() - currPos - 1);
-            else
+            
+            if (fromRoot == true && m_suffix.length() > 1) {
+               m_suffix = m_suffix.substring(1);
+            }
+            else {
+               if (currPos > 0) {
+                  if (m_suffix.length() - remainder >= 0)
+                     m_suffix = m_suffix.substring(m_suffix.length() - remainder);
+                  else
+                     m_suffix = "";
+               }
+            }
+            if (m_suffix.length() > 0) {
+               nextEdge = m_suffix.charAt(0);
+               activepoint.setLength(m_suffix.length() - 1);
+            }
+            else {
+               m_suffix = "";
                activepoint.setLength(0);
-         }
-         else {
-            activepoint.setLength(0);
+            }
             currPos = 0;
+            fromRoot = true;
+            activepoint.setEdge(nextEdge);
          }
-         activepoint.setEdge(nextEdge);
       }
-      //System.out.println("next node is : " + activepoint.getNode().getType() + " edge = " + activepoint.getEdge() + " length = " + activepoint.getLength());
    }
 
    //reset the active edge if activepoint is at the end of the edge
    private void canonize(int idx, int i) {
       Node eNode;
       Node nextNode;
-      //System.out.println("canonize active_length is : " + activepoint.getLength()); 
       if (activepoint.getEdge() == '\0')
          return;
       eNode = activepoint.getNode().getChildAt(alphabet.indexOf(activepoint.getEdge()));
       int difference = 0;
-      //if activepoint at the end of the edge
-      while (eNode != null && eNode.getType() == Node.TYPE_INTERNAL && eNode.getLength() <= activepoint.getLength()) {
+      while (eNode != null && eNode.getType() == Node.TYPE_INTERNAL && 
+             eNode.getLength() <= activepoint.getLength()) {
          //move activepoint to the next node downstream
          nextNode = eNode;
          currPos += eNode.getLength();
-         //System.out.println("m_suffix = " + m_suffix);
-         //System.out.println("eNode length = " + eNode.getLength());
          difference = activepoint.getLength() - eNode.getLength();
          if (difference == 0)
             activepoint.setEdge('\0');
@@ -422,24 +401,18 @@ public class SuffixTree {
             eNode = null;
          else
             eNode = activepoint.getNode().getChildAt(alphabet.indexOf(activepoint.getEdge()));
-         //System.out.println("canonize active_node is : " + activepoint.getNode().getType() + " edge = " + activepoint.getEdge() + " length = " + activepoint.getLength());
-         //System.out.println("m_suffix = " + m_suffix);
       }
    }
 
    public int getLegUp(Node node) {
       int i = 0;
       int idx = node.getPositionAt(i).idx;
-      //System.out.println("get leg up, node type= " + node.getType());
-      //System.out.println(i + " end of the edge= " + (node.getEnd().position) + " start= " + node.getPositionAt(i).position);
       while(i < node.getNumPositions() && (idx != node.getStart().idx
             || node.getEnd().position < node.getPositionAt(i).position)) {
          i++;
          idx = node.getPositionAt(i).idx;
-         //System.out.println(i + " end of the edge= " + (node.getEnd().position) + " start= " + node.getPositionAt(i).position);
 
       }
-      //System.out.println(i + " end of the edge= " + (node.getEnd().position) + " start= " + node.getPositionAt(i).position);
       return node.getEnd().position - node.getPositionAt(i).position + 1;
    }
 
@@ -483,9 +456,7 @@ public class SuffixTree {
       int idx = m_sequences.size() - 1;
       ArrayList<Position> positions = new ArrayList<Position>();
       traverse(root, 0, 0, string.length() - 1, idx, positions);
-      //System.out.println("number of hits = " + Integer.toString(positions.size()));
       for (int j = 0; j < positions.size(); j++) {
-         System.out.println(positions.get(j).position);
          if (positions.get(j).position < position)
             position = positions.get(j).position;
       }
@@ -495,18 +466,13 @@ public class SuffixTree {
    }
 
    public void traverse(Node n, int pos, int start, int end, int idx, ArrayList<Position> positions) {
-      //int count = 0;
-      //boolean goOn = true;
-      ////System.out.println("before while");
       int i = 0;
       while (i < alphabet.length()) {
          if (n.getChildAt(i) != null) {
-            //System.out.println("First Char is " + m_sequences.get(idx).charAt(start));
             if (m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position)
                 == m_sequences.get(idx).charAt(start) ||
               m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position) == 'N' ||
                m_sequences.get(idx).charAt(start) == 'N') {
-               //count++;
                
                int j = 1;
                while(j <= n.getChildAt(i).getEnd().position - n.getChildAt(i).getStart().position && j <= end - start
@@ -514,20 +480,18 @@ public class SuffixTree {
                       == m_sequences.get(idx).charAt(start + j)
                 || m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position + j) == 'N'
                 || m_sequences.get(idx).charAt(start + j) == 'N')) {
-                  //System.out.println("Curr Char is " + m_sequences.get(idx).charAt(start + j));
                   j++;
                } //compare edge label
 
                j--;
                if (j == n.getChildAt(i).getEnd().position - n.getChildAt(i).getStart().position) { //entire label match
                   if (j < end - start && n.getChildAt(i).getNumChildren() > 0) {//Node has children
-                     System.out.println("recursive insert!");
+                     //System.out.println("recursive insert!");
                      traverse(n.getChildAt(i), pos, start + j + 1, end, idx, positions);
                   }
                   else {
-                     System.out.println("The Char is " + m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position + j));
                      if (n.getChildAt(i).getChildAt(5) != null) {
-                           System.out.println("$");
+                           //System.out.println("$");
                            for (Position position : n.getChildAt(i).getChildAt(5).getPositions()) {
                                  positions.add(position);
                            }
@@ -535,7 +499,6 @@ public class SuffixTree {
                   }
                }
                else {
-                  System.out.println("The Last Char is " + m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position + j + 1));
                   if (m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position + j + 1)
                       == '$'){
                      for (Position position : n.getChildAt(i).getPositions()) {
@@ -546,7 +509,7 @@ public class SuffixTree {
                }
             }
             else {
-               System.out.println("The mismatch Char is " + m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position));
+               //System.out.println("The mismatch Char is " + m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position));
                if (n.getType() != Node.TYPE_ROOT && m_sequences.get(n.getChildAt(i).getStart().idx).charAt(n.getChildAt(i).getStart().position) == '$') {
                   for (Position position : n.getChildAt(i).getPositions()) {
                      //System.out.println("position added : " + Integer.toString(position.position));
@@ -578,7 +541,7 @@ public class SuffixTree {
          //sf.addString("ACGG");
          Node r = sf.buildTree();
          System.out.println(r.getNumChildren());
-         for (int i =0; i < 5; i++) {
+         /*for (int i =0; i < 5; i++) {
             if (r.getChildAt(i) != null) {
                System.out.println(i + " : " + sf.substr(r.getChildAt(i).getStart(),r.getChildAt(i).getEnd()));
                System.out.println("length : " + r.getChildAt(i).getLength());
@@ -593,7 +556,7 @@ public class SuffixTree {
                   }
                }
             }
-         }
+         }*/
          System.out.println("number of leaves = " + Integer.toString(sf.m_leaves.size()));
          int count = 0;
          for (Node n : sf.m_leaves) {
